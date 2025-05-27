@@ -48,7 +48,7 @@ void Alt_kalman::update(float z_sens, float accel, float h)
   k3 = p32_ / s;
 
   //inovation
-  float e = z_sens - altitude_; 
+  float e = z_sens - altitude_;
 
   //estimate state
   velocity = velocity_ + k1 * e;

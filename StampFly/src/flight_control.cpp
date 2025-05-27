@@ -149,7 +149,7 @@ PID r_pid;
 PID phi_pid;
 PID theta_pid;
 PID psi_pid;
-//PID alt;
+// PID alt;
 PID alt_pid;
 PID z_dot_pid;
 Filter Thrust_filtered;
@@ -157,6 +157,8 @@ Filter Duty_fr;
 Filter Duty_fl;
 Filter Duty_rr;
 Filter Duty_rl;
+
+
 
 volatile float Thrust0=0.0;
 uint8_t Alt_flag = 0;
@@ -392,6 +394,7 @@ void control_init(void)
 
 void get_command(void)
 {
+  read_pc_serial_commands();
   static uint16_t stick_count;
   float th,thlo;
   float throttle_limit = 0.7;

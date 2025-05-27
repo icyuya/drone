@@ -1,9 +1,12 @@
 #ifndef CONTROL_HPP
 #define CONTROL_HPP
 
-//#include <Arduino.h>
+// #include <Arduino.h>
 #include <stdint.h>
 #include <math.h>
+#include "rc.hpp"
+#include "pid.hpp"    // PIDクラスの定義
+#include "sensor.hpp" // sensor.hpp をインクルードすることで Range などにアクセス可能になる
 #include <FastLED.h>
 #include <vl53lx_platform.h>
 
@@ -21,23 +24,26 @@
 
 #define ANGLECONTROL 0
 #define RATECONTROL 1
+#define ALT_CONTROL_MODE 4     // コントローラー側の定義と値を合わせる
+#define NOT_ALT_CONTROL_MODE 5 // コントローラー側の定義と値を合わせる
 
-//グローバル関数の宣言
+// グローバル関数の宣言
 void init_copter(void);
 void loop_400Hz(void);
 void set_duty_fr(float duty);
 void set_duty_fl(float duty);
 void set_duty_rr(float duty);
 void set_duty_rl(float duty);
+void read_pc_serial_commands();
 
-//グローバル変数
+// グローバル変数
 extern uint8_t Mode;
 extern volatile uint8_t Loop_flag;
 extern float Control_period;
 extern volatile float Elapsed_time;
 
-//PID Gain
-//Rate control PID gain
+// PID Gain
+// Rate control PID gain
 extern const float Roll_rate_kp;
 extern const float Roll_rate_ti;
 extern const float Roll_rate_td;
@@ -53,7 +59,7 @@ extern const float Yaw_rate_ti;
 extern const float Yaw_rate_td;
 extern const float Yaw_rate_eta;
 
-//Angle control PID gain
+// Angle control PID gain
 extern const float Rall_angle_kp;
 extern const float Rall_angle_ti;
 extern const float Rall_angle_td;
@@ -64,7 +70,7 @@ extern const float Pitch_angle_ti;
 extern const float Pitch_angle_td;
 extern const float Pitch_angle_eta;
 
-//Altitude control PID gain
+// Altitude control PID gain
 extern const float alt_kp;
 extern const float alt_ti;
 extern const float alt_td;
@@ -73,37 +79,37 @@ extern const float alt_period;
 
 extern volatile float Interval_time;
 
-//Offset
-extern volatile float Roll_angle_offset, Pitch_angle_offset, Yaw_angle_offset;  
+// Offset
+extern volatile float Roll_angle_offset, Pitch_angle_offset, Yaw_angle_offset;
 extern volatile float Elevator_center, Aileron_center, Rudder_center;
 
-//制御目標
-//PID Control reference
-//角速度目標値
-//Rate reference
+// 制御目標
+// PID Control reference
+// 角速度目標値
+// Rate reference
 extern volatile float Roll_rate_reference, Pitch_rate_reference, Yaw_rate_reference;
-//角度目標値
-//Angle reference
+// 角度目標値
+// Angle reference
 extern volatile float Roll_angle_reference, Pitch_angle_reference, Yaw_angle_reference;
-//舵角指令値
-//Commanad
-//スロットル指令値
-//Throttle
+// 舵角指令値
+// Commanad
+// スロットル指令値
+// Throttle
 extern volatile float Thrust_command;
-//角速度指令値
-//Rate command
+// 角速度指令値
+// Rate command
 extern volatile float Roll_rate_command, Pitch_rate_command, Yaw_rate_command;
-//角度指令値
-//Angle comannd
+// 角度指令値
+// Angle comannd
 extern volatile float Roll_angle_command, Pitch_angle_command, Yaw_angle_command;
-//高度目標
+// 高度目標
 extern volatile float Alt_ref;
-//Motor Duty 
+// Motor Duty
 extern volatile float FrontRight_motor_duty;
 extern volatile float FrontLeft_motor_duty;
 extern volatile float RearRight_motor_duty;
 extern volatile float RearLeft_motor_duty;
-//速度目標Z
+// 速度目標Z
 extern float Z_dot_ref;
 
 extern uint8_t Control_mode;
