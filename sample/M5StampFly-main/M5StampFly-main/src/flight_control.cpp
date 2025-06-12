@@ -115,6 +115,12 @@ const float z_dot_eta = 0.125f;
 const float Duty_bias_up   = 1.581f;  // Altitude Control parameter　Itolab 1.589 M5Stack 1.581
 const float Duty_bias_down = 1.578f;  // Auto landing  parameter Itolab 1.578 M5Stack 1.578
 
+const float dist_x_kp     = 0.18f;  // Pゲイン (要調整)
+const float dist_x_ti     = 10.0f;  // Iゲイン (要調整)
+const float dist_x_td     = 0.5f;   // Dゲイン (要調整)
+const float dist_x_eta    = 0.125f;
+const float dist_x_period = 0.0333f;  // 30Hzで動作させる想定
+
 // Times
 volatile float Elapsed_time     = 0.0f;
 volatile float Old_Elapsed_time = 0.0f;
@@ -170,11 +176,11 @@ uint8_t BtnA_on_flag                  = 0;
 uint8_t BtnA_off_flag                 = 1;
 volatile uint8_t Loop_flag            = 0;
 // volatile uint8_t Angle_control_flag = 0;
-uint8_t Stick_return_flag     = 0;
-uint8_t Throttle_control_mode = 0;
-uint8_t Landing_state         = 0;
-uint8_t OladRange0flag        = 0;
-
+uint8_t Stick_return_flag         = 0;
+uint8_t Throttle_control_mode     = 0;
+uint8_t Landing_state             = 0;
+uint8_t OladRange0flag            = 0;
+const float Target_distance_front = 0.3f;
 // for flip
 float FliRoll_rate_time          = 2.0;
 uint8_t Flip_flag                = 0;
@@ -193,6 +199,7 @@ PID psi_pid;
 // PID alt;
 PID alt_pid;
 PID z_dot_pid;
+PID dist_x_pid;
 Filter Thrust_filtered;
 Filter Duty_fr;
 Filter Duty_fl;
@@ -219,6 +226,7 @@ void variable_init(void);
 void get_command(void);
 void angle_control(void);
 void rate_control(void);
+void wall_control(void);
 void output_data(void);
 void output_sensor_raw_data(void);
 void motor_stop(void);
@@ -584,6 +592,8 @@ void control_init(void) {
     // Altitude control
     alt_pid.set_parameter(alt_kp, alt_ti, alt_td, alt_eta, alt_period);
     z_dot_pid.set_parameter(z_dot_kp, z_dot_ti, z_dot_td, alt_eta, alt_period);
+
+    dist_x_pid.set_parameter(dist_x_kp, dist_x_ti, dist_x_td, dist_x_eta, dist_x_period);
 
     Duty_fl.set_parameter(0.003, Control_period);
     Duty_fr.set_parameter(0.003, Control_period);
@@ -980,6 +990,34 @@ void reset_angle_control(void) {
     /////////////////////////////////////
 }
 
+void wall_control(void) {
+    float dist_err;
+    float target_pitch_angle;
+
+    // 高度制御がOFF、または高度が低すぎる場合は何もしない
+    if (Alt_flag == 0 || Altitude2 < 0.1f) {
+        dist_x_pid.reset();  // PID積分値をリセット
+        return;
+    }
+
+    // ToFセンサーが有効な値(0より大きい)を返している場合のみ制御
+    if (RangeFront > 0) {
+        // 距離の誤差を計算 (現在距離 - 目標距離)
+        dist_err = ((float)RangeFront / 1000.0f) - Target_distance_front;  // ← このように書き換える
+
+        // PIDコントローラーで目標ピッチ角を計算
+        target_pitch_angle = dist_x_pid.update(dist_err, Interval_time);
+
+        // 角度が大きくなりすぎないように制限（リミッター）
+        const float angle_limit = 15.0f * PI / 180.0f;  // 最大傾斜角を15度に制限
+        if (target_pitch_angle > angle_limit) target_pitch_angle = angle_limit;
+        if (target_pitch_angle < -angle_limit) target_pitch_angle = -angle_limit;
+
+        // 計算した目標角度を、姿勢制御の目標値として設定する
+        Pitch_angle_reference = target_pitch_angle;
+    }
+}
+
 void angle_control(void) {
     float phi_err, theta_err, alt_err;
     static uint8_t cnt   = 0;
@@ -1004,6 +1042,7 @@ void angle_control(void) {
             // Get Roll and Pitch angle ref
             Roll_angle_reference  = 0.5f * PI * (Roll_angle_command - Aileron_center);
             Pitch_angle_reference = 0.5f * PI * (Pitch_angle_command - Elevator_center);
+            wall_control();
             if (Roll_angle_reference > (30.0f * PI / 180.0f)) Roll_angle_reference = 30.0f * PI / 180.0f;
             if (Roll_angle_reference < -(30.0f * PI / 180.0f)) Roll_angle_reference = -30.0f * PI / 180.0f;
             if (Pitch_angle_reference > (30.0f * PI / 180.0f)) Pitch_angle_reference = 30.0f * PI / 180.0f;

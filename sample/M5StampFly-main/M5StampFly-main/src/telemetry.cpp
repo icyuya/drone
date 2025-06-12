@@ -202,6 +202,17 @@ void telemetry_sequence_fast(void) {
         esp_led(0x001100, 1);  // Telemetory Reciver ON
 }
 
+void teleplot_output(void) {
+    // >変数名:値 という形式でシリアルポートに送信します。
+    // Teleplot側では、dist_bottom と dist_front という名前でグラフが表示されます。
+
+    // 下向きToFセンサーの距離（単位: mm）
+    USBSerial.printf(">dist_bottom:%d\n", Range);
+
+    // 前向きToFセンサーの距離（単位: mm）
+    USBSerial.printf(">dist_front:%d\n", RangeFront);
+}
+
 void make_telemetry_data_fast(uint8_t* senddata) {
     float d_float;
     uint8_t d_int[4];

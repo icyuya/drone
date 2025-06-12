@@ -282,7 +282,8 @@ float sensor_read(void) {
                 // 距離の値の更新
                 // old_range[0] = dist;
                 RawRange = tof_bottom_get_range();
-                if (Mode == PARKING_MODE) RawRangeFront = tof_front_get_range();
+                // if (Mode == PARKING_MODE) RawRangeFront = tof_front_get_range();
+                RawRangeFront = tof_front_get_range();
                 // USBSerial.printf("%9.6f %d\n\r", Elapsed_time, RawRange);
                 if (RawRange > 20) {
                     Range = RawRange;

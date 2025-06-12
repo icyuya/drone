@@ -30,5 +30,6 @@
 
 void telemetry(void);
 void telemetry_fast(void);
+void teleplot_output(void);
 
 #endif
