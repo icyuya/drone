@@ -1,0 +1,16 @@
+{
+  "name": "Atom-JoyStick",
+  "description": "Library for M5Stack Atom-JoyStick",
+  "keywords": "M5Stack Atom-JoyStick",
+  "authors": {
+    "name": "M5Stack",
+    "url": "http://www.m5stack.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/m5stack/Atom-JoyStick.git"
+  },
+  "version": "0.0.1",
+  "frameworks": "arduino",
+  "platforms": "espressif32"
+}
